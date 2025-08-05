@@ -7,8 +7,8 @@ def main():
     return "Hello world"
 
 
-#@app.get("/status")
-#def main():
+# @app.get("/status")
+# def main():
 #    return "{status:ok}"
 
 
