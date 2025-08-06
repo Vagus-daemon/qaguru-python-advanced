@@ -36,7 +36,6 @@ def test_login_user():
 def test_user_registration():
     data = {"email": "charles.morris@reqres.in", "password": "qwerty"}
     response = requests.post(url=url + 'register', headers=headers, data=data)
-    expected_id = '5'
     expected_token = 'QpwL5tke4Pnpja7X5'
     body = response.json()
     assert response.status_code == 200
