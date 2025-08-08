@@ -2,12 +2,19 @@ import json
 import uvicorn
 
 from fastapi import FastAPI, HTTPException
+from fastapi_pagination import Page, add_pagination, paginate
 from http import HTTPStatus
+from models.AppStatus import AppStatus
 from models.User import User
 
 app = FastAPI()
-
+add_pagination(app)
 users: list[User]
+
+
+@app.get("/status", status_code=HTTPStatus.OK)
+def status():
+    return AppStatus(users=bool(users))
 
 
 @app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
@@ -20,8 +27,8 @@ def get_user(user_id: int) -> User:
 
 
 @app.get("/api/users/", status_code=HTTPStatus.OK)
-def get_users() -> list[User]:
-    return users
+def get_users() -> Page[User]:
+    return paginate(users)
 
 
 if __name__ == "__main__":
