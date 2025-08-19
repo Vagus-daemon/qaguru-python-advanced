@@ -7,4 +7,4 @@ def test_service(app_url):
     body = response.json()
     print(response.json())
     assert response.status_code == HTTPStatus.OK
-    assert body['users'] is True
+    assert body['database'] is True

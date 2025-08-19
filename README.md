@@ -11,9 +11,13 @@ source .venv/bin/activate (Linux) / .\.venv\Scripts\Activate.ps1 (Windows)
 ```
 pip install -r requirements.txt 
 ```
-4. Запустить api микросервис
+4. Запустить postgresql в докере
 ```bash
-python  reqres_service.py
+docker compose up -d
+```
+5. Запустить api микросервис
+```bash
+python  main.py
 ```
 5. Запустить тесты командой
 ```bash

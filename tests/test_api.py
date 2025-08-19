@@ -1,8 +1,14 @@
 import pytest
 import requests
 from http import HTTPStatus
-from math import ceil
-from models.User import User
+from app.models.User import User
+from app.database.users import get_user
+from faker import Faker
+
+fake = Faker()
+
+
+
 
 
 @pytest.fixture
@@ -13,22 +19,22 @@ def users(app_url):
 
 
 def test_users_no_duplicates(users):
-    users_ids = [user["id"] for user in users['items']]
+    users_ids = [user["email"] for user in users]
     assert len(users_ids) == len(set(users_ids)), f"Обнаружены дубликаты: {users_ids.remove(set(users_ids))}"
 
 
+@pytest.mark.usefixtures("fill_test_data")
 def test_users_validation(users):
-    for user in users['items']:
+    for user in users:
         assert User.model_validate(user), f"Пользователь {user} не соответствует структуре модели User"
 
 
-@pytest.mark.parametrize("user_id", [num for num in range(1, 13)])
-def test_user(app_url, user_id):
-    response = requests.get(f"{app_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.OK
-
-    user = response.json()
-    User.model_validate(user)
+def test_user(app_url, fill_test_data):
+    for user_id in (fill_test_data[0], fill_test_data[-1]):
+        response = requests.get(f"{app_url}/api/users/{user_id}")
+        assert response.status_code == HTTPStatus.OK
+        user = response.json()
+        User.model_validate(user)
 
 
 @pytest.mark.parametrize("user_id", [13])
@@ -43,31 +49,80 @@ def test_user_invalid_values(app_url, user_id):
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-@pytest.mark.parametrize("page, size",
-                         [(1, 1), (12, 1), (1, 3), (2, 3), (1, 15), (2, 15),
-                          (1, 10), (2, 10), (2, 4), (4, 4), (3, 5), (4, 5)])
-def test_pagination(app_url, page, size, users):
-    total = users['total']
+def test_create_user(app_url):
+    data = {
+        "email": f"{fake.email()}",
+        "first_name": f"{fake.first_name()}",
+        "last_name": f"{fake.last_name()}",
+        "avatar": "https://example.com/avatar.jpg",
+    }
 
-    response = requests.get(f"{app_url}/api/users/?page={page}&size={size}")
-    assert response.status_code == HTTPStatus.OK
+    create_response = requests.post(f"{app_url}/api/users/", json=data)
+    assert create_response.status_code == HTTPStatus.CREATED
 
-    response = response.json()
-    response_user = response['items']
-    total_pages = ceil(total / size)
-    last_page = total % size
-    per_page = size % total
-    current_lenght = last_page if page == total_pages and last_page != 0 else size
+    created_user = create_response.json()
+    assert created_user["email"] == data["email"]
+    assert created_user["first_name"] == data["first_name"]
+    assert created_user["last_name"] == data["last_name"]
 
-    assert response["total"] == total, "Некорректный total в ответе"
-    assert response['page'] == page, "Некорректный page в ответе"
-    assert response['size'] == size, "Некорректный size в ответе"
-    assert response['pages'] == total_pages, "Некорректный total_pages в ответе"
-    if page <= total_pages:
-        start_id = (page - 1) * per_page
-        x = users['items'][start_id: start_id + current_lenght]
-        assert len(response_user) == current_lenght, \
-            f"Количество пользователей в ответе = {len(response_user)}, должно быть  {current_lenght}"
-        assert response_user == x, "Cписок пользователей не верен"
-    else:
-        assert len(response_user) == 0, "Список пользователей в ответе должен быть пустым"
+    user_from_db = get_user(created_user["id"])
+    assert user_from_db is not None
+    assert user_from_db.email == data["email"]
+    assert user_from_db.first_name == data["first_name"]
+    assert user_from_db.last_name == data["last_name"]
+    new_user_id = created_user['id']
+    delete_response = requests.delete(f"{app_url}/api/users/{new_user_id}")
+    assert delete_response.status_code == HTTPStatus.OK
+
+
+def test_delete_user(app_url):
+    get_users_response = requests.get(f"{app_url}/api/users/")
+    data = {
+        "email": f"{fake.email()}",
+        "first_name": f"{fake.first_name()}",
+        "last_name": f"{fake.last_name()}",
+        "avatar": "https://example.com/avatar.jpg",
+    }
+
+    create_response = requests.post(f"{app_url}/api/users/", json=data)
+    assert create_response.status_code == HTTPStatus.CREATED
+
+    created_user = create_response.json()
+    new_user_id = created_user['id']
+    delete_response = requests.delete(f"{app_url}/api/users/{new_user_id}")
+    assert delete_response.status_code == HTTPStatus.OK
+
+    user = requests.get(f"{app_url}/api/users/{new_user_id}")
+    assert user.status_code == HTTPStatus.NOT_FOUND
+
+    get_users_response_after_del = requests.get(f"{app_url}/api/users/")
+    assert len(get_users_response.json()) == len(get_users_response_after_del.json())
+
+
+def test_update_user(app_url):
+    data = {
+        "email": f"{fake.email()}",
+        "first_name": f"{fake.first_name()}",
+        "last_name": f"{fake.last_name()}",
+        "avatar": "https://example.com/avatar.jpg",
+    }
+    updated_data = {
+        "email": f"{fake.email()}",
+        "first_name": f"{fake.first_name()}",
+        "last_name": f"{fake.last_name()}",
+    }
+    create_response = requests.post(f"{app_url}/api/users/", json=data)
+    assert create_response.status_code == HTTPStatus.CREATED
+    created_user = create_response.json()
+    new_user_id = created_user['id']
+
+    update_response = requests.patch(f"{app_url}/api/users/{new_user_id}", json=updated_data)
+    assert update_response.status_code == HTTPStatus.OK
+    updated_user = update_response.json()
+    assert updated_user['email'] != created_user['email']
+    assert updated_user['first_name'] != created_user['first_name']
+    assert updated_user['last_name'] != created_user['last_name']
+
+    delete_response = requests.delete(f"{app_url}/api/users/{new_user_id}")
+    assert delete_response.status_code == HTTPStatus.OK
+
