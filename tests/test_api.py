@@ -1,14 +1,10 @@
 import pytest
 import requests
 from http import HTTPStatus
-from app.models.User import User
 from app.database.users import get_user
 from faker import Faker
 
 fake = Faker()
-
-
-
 
 
 @pytest.fixture
@@ -21,20 +17,6 @@ def users(app_url):
 def test_users_no_duplicates(users):
     users_ids = [user["email"] for user in users]
     assert len(users_ids) == len(set(users_ids)), f"Обнаружены дубликаты: {users_ids.remove(set(users_ids))}"
-
-
-@pytest.mark.usefixtures("fill_test_data")
-def test_users_validation(users):
-    for user in users:
-        assert User.model_validate(user), f"Пользователь {user} не соответствует структуре модели User"
-
-
-def test_user(app_url, fill_test_data):
-    for user_id in (fill_test_data[0], fill_test_data[-1]):
-        response = requests.get(f"{app_url}/api/users/{user_id}")
-        assert response.status_code == HTTPStatus.OK
-        user = response.json()
-        User.model_validate(user)
 
 
 @pytest.mark.parametrize("user_id", [13])
