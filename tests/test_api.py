@@ -1,17 +1,11 @@
 import pytest
 import requests
+from faker import Faker
 from http import HTTPStatus
 from app.database.users import get_user
-from faker import Faker
+from fixtures.fixtures import users
 
 fake = Faker()
-
-
-@pytest.fixture
-def users(app_url):
-    response = requests.get(f"{app_url}/api/users/")
-    assert response.status_code == HTTPStatus.OK
-    return response.json()
 
 
 def test_users_no_duplicates(users):
@@ -40,6 +34,7 @@ def test_create_user(app_url):
     }
 
     create_response = requests.post(f"{app_url}/api/users/", json=data)
+    print(create_response.url)
     assert create_response.status_code == HTTPStatus.CREATED
 
     created_user = create_response.json()

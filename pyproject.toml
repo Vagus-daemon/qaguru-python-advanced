@@ -1,0 +1,32 @@
+
+[project]
+name = "qaguru-python-advanced"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Dmitrii",email = "glele@LAPTOP-GJATDHDQ.(none) "}
+]
+readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "email-validator (==2.2.0)",
+    "fastapi (==0.116.1)",
+    "fastapi-pagination (==0.13.3)",
+    "psycopg2-binary (==2.9.10)",
+    "pydantic (==2.11.7)",
+    "pytest (==8.4.1)",
+    "python-dotenv (==1.1.1)",
+    "requests (==2.32.4)",
+    "sqlalchemy (==2.0.42)",
+    "sqlmodel (==0.0.24)",
+    "uvicorn (==0.35.0)"
+]
+
+[[tool.poetry.packages]]
+include = "app"
+from = "."
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,10 +1,7 @@
-import dotenv
-
-dotenv.load_dotenv()
 import uvicorn
-from database.engine import create_db_and_tables
+from app.database.engine import create_db_and_tables
 from fastapi import FastAPI
-from routers import status, users
+from app.routers import status, users
 
 app = FastAPI()
 app.include_router(status.router)
