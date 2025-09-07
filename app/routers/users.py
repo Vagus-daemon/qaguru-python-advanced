@@ -13,8 +13,6 @@ router = APIRouter(prefix="/api/users")
 
 @router.get("/{user_id}", status_code=HTTPStatus.OK)
 def get_user(user_id: int) -> User:
-    if user_id < 1:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user_id")
     user = users.get_user(user_id)
 
     if not user:
