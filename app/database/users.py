@@ -19,6 +19,13 @@ def get_users() -> Iterable[User]:
 
 def create_user(user: UserCreate) -> User:
     with Session(engine) as session:
+        user = User(
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            avatar=str(user.avatar)
+        )
+
         session.add(user)
         session.commit()
         session.refresh(user)
