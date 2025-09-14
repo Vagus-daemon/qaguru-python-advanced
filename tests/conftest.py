@@ -1,14 +1,17 @@
-import os
-
-import dotenv
 import pytest
+from fixtures.helper import Helper
+from config import Server
 
 
-@pytest.fixture(scope="session", autouse=True)
-def envs():
-    dotenv.load_dotenv()
+def pytest_addoption(parser):
+    parser.addoption("--env", default="dev")
 
 
 @pytest.fixture(scope="session")
-def app_url():
-    return os.getenv("APP_URL")
+def env(request):
+    return request.config.getoption("--env")
+
+
+@pytest.fixture(scope="session")
+def helper(env) -> Helper:
+    return Helper(host=Server(env).reqres)

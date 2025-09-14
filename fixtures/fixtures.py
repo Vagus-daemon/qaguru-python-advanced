@@ -1,11 +1,9 @@
 import pytest
-import requests
+from config import Server
+from utils.base_session import BaseSession
 
-from http import HTTPStatus
 
-
-@pytest.fixture
-def users(app_url):
-    response = requests.get(f"{app_url}/api/users/")
-    assert response.status_code == HTTPStatus.OK
-    return response.json()
+@pytest.fixture(scope='session')
+def base_session(env):
+    with BaseSession(base_url=Server(env).reqres) as session:
+        yield session

@@ -1,24 +1,25 @@
 from pydantic import EmailStr, BaseModel, HttpUrl
 from sqlmodel import Field, SQLModel
+from typing import Optional
 
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    email: EmailStr
-    first_name: str
-    last_name: str
-    avatar: str
+    email: Optional[EmailStr]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    avatar: Optional[str]
 
 
 class UserCreate(BaseModel):
-    email: EmailStr
-    first_name: str
-    last_name: str
-    avatar: HttpUrl
+    email: Optional[EmailStr]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    avatar: Optional[HttpUrl]
 
 
 class UserUpdate(BaseModel):
-    email: EmailStr | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    avatar: HttpUrl | None = None
+    email: Optional[EmailStr] | None = None
+    first_name: Optional[str] | None = None
+    last_name: Optional[str] | None = None
+    avatar: Optional[HttpUrl] | None = None

@@ -10,19 +10,13 @@ git clone https://github.com/Vagus-daemon/qaguru-python-advanced.git
 poetry update
 ```
 
-3. Запустить postgresql в докере
+3. Запустить postgresql  и прилоэение в докере
 
 ```bash
-docker compose up -d
+docker compose up 
 ```
 
-4. Запустить api микросервис
-
-```bash
-python  main.py
-```
-
-5. Запустить тесты командой
+4. Запустить тесты командой
 
 ```bash
 pytest
